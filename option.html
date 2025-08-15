@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DSA Coach Options</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin: 8px 0 4px;
+    }
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+    input[type="number"] {
+      width: 60px;
+      padding: 4px;
+      margin-left: 8px;
+    }
+    #saveStatus {
+      margin-top: 12px;
+      color: green;
+      font-weight: bold;
+      display: none;
+    }
+    button {
+      margin-top: 15px;
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h2>DSA Coach Settings</h2>
+
+  <form id="options-form">
+    <fieldset>
+      <legend>Enable hint popups on:</legend>
+      <label><input type="checkbox" name="site" value="leetcode" /> LeetCode</label>
+      <label><input type="checkbox" name="site" value="geeksforgeeks" /> GeeksforGeeks</label>
+      <label><input type="checkbox" name="site" value="codeforces" /> Codeforces</label>
+      <label><input type="checkbox" name="site" value="codechef" /> CodeChef</label>
+    </fieldset>
+
+    <label for="hintDelay">Hint delay (minutes):</label>
+    <input
+      type="number"
+      id="hintDelay"
+      name="hintDelay"
+      min="0"
+      max="30"
+      step="1"
+      value="10"
+    />
+    <small>Time to wait before showing the first hint.</small>
+
+    <br />
+
+    <button type="submit">Save Settings</button>
+  </form>
+
+  <div id="saveStatus">Settings saved!</div>
+
+  <script>
+    const form = document.getElementById("options-form");
+    const saveStatus = document.getElementById("saveStatus");
+
+    // Load settings from storage and update UI
+    function loadOptions() {
+      chrome.storage.sync.get(
+        { enabledSites: ["leetcode"], hintDelay: 10 },
+        (items) => {
+          // Check checkboxes for enabled sites
+          document.querySelectorAll('input[name="site"]').forEach((checkbox) => {
+            checkbox.checked = items.enabledSites.includes(checkbox.value);
+          });
+          // Set hint delay input value
+          document.getElementById("hintDelay").value = items.hintDelay;
+        }
+      );
+    }
+
+    // Save settings to storage
+    function saveOptions(e) {
+      e.preventDefault();
+      const enabledSites = [];
+      document.querySelectorAll('input[name="site"]:checked').forEach((cb) => {
+        enabledSites.push(cb.value);
+      });
+      const hintDelay = parseInt(document.getElementById("hintDelay").value, 10);
+
+      chrome.storage.sync.set(
+        { enabledSites: enabledSites, hintDelay: hintDelay },
+        () => {
+          saveStatus.style.display = "block";
+          setTimeout(() => {
+            saveStatus.style.display = "none";
+          }, 1500);
+        }
+      );
+    }
+
+    form.addEventListener("submit", saveOptions);
+
+    document.addEventListener("DOMContentLoaded", loadOptions);
+  </script>
+</body>
+</html>
